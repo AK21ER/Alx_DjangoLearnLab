@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -49,11 +50,20 @@ def check_role(role):
     def inner(user):
         return hasattr(user, 'userprofile') and user.userprofile.role == role
     return inner
+=======
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import UserProfile
+
+def is_admin(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
+>>>>>>> Stashed changes
 
 @login_required
-@user_passes_test(check_role('Admin'))
+@user_passes_test(is_admin)
 def admin_view(request):
     return render(request, 'relationship_app/admin_view.html')
+<<<<<<< Updated upstream
 
 @login_required
 @user_passes_test(check_role('Librarian'))
@@ -101,4 +111,8 @@ def delete_book(request, book_id):
         book.delete()
         return redirect('list_books')
     return render(request, 'relationship_app/confirm_delete.html', {'book': book})
+=======
+)
+>>>>>>> 6f85b7a85f44c88147815b342be38c60b5b21e18
+>>>>>>> Stashed changes
 
