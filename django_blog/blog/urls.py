@@ -11,11 +11,10 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path('posts/', views.posts, name='posts'),  # <- Make sure this exists
-
-    path('', PostListView.as_view(), name='home'),
-    path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
-    path('posts/new/', PostCreateView.as_view(), name='post-create'),
-    path('posts/<int:pk>/edit/', PostUpdateView.as_view(), name='post-update'),
-    path('posts/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
+    path('', PostListView.as_view(), name='home'),  # list all posts
+    path('post/new/', PostCreateView.as_view(), name='post-create'),  # create
+    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),  # detail
+    path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),  # update
+    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),  # delete
 ]
 
