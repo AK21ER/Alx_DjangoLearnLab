@@ -131,6 +131,24 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         comment = self.get_object()
         return self.request.user == comment.author
 
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+
+    def form_valid(self, form):
+        # Attach the logged-in user as comment author
+        form.instance.author = self.request.user
+        # Attach the post using the pk from URL
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.post = post
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect back to the post detail after adding comment
+        return reverse('post-detail', kwargs={'pk': self.kwargs['pk']})
+
+
+
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
