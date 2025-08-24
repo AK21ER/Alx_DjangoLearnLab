@@ -5,7 +5,7 @@ from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -27,10 +27,3 @@ class LoginView(generics.GenericAPIView):
             return Response({'token': token.key})
         return Response({'error': 'Invalid Credentials'}, status=400)
 
-class ProfileView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
