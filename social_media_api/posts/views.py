@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from .models import Post, Comment , Like
 from .serializers import PostSerializer, CommentSerializer
 from notifications.models import Notification
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+
+User = get_user_model()
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
@@ -32,41 +36,22 @@ def feed(request):
     posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def like_post(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
+    post = get_object_or_404(Post, pk=pk)
     like, created = Like.objects.get_or_create(user=request.user, post=post)
-    if not created:
-        return Response({"error": "You already liked this post"}, status=status.HTTP_400_BAD_REQUEST)
+    if created:
+        return Response({"message": f"You liked '{post.title}'"})
+    return Response({"message": "You already liked this post"})
 
-    # Create notification for post author
-    if post.author != request.user:
-        Notification.objects.create(
-            recipient=post.author,
-            actor=request.user,
-            verb="liked your post",
-            target=post
-        )
-
-    return Response({"message": "Post liked!"}, status=status.HTTP_201_CREATED)
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def unlike_post(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
+    post = get_object_or_404(Post, pk=pk)
     try:
         like = Like.objects.get(user=request.user, post=post)
         like.delete()
-        return Response({"message": "Post unliked!"}, status=status.HTTP_200_OK)
+        return Response({"message": f"You unliked '{post.title}'"})
     except Like.DoesNotExist:
-        return Response({"error": "You have not liked this post"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "You have not liked this post"})
