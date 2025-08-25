@@ -1,16 +1,14 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model
+from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import authenticate
 from .serializers import RegisterSerializer
-
-User = get_user_model()
-
+from .models import CustomUser  # Use explicit model instead of get_user_model
+from rest_framework import status
 
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()  # ✅ Explicitly use CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
@@ -25,17 +23,17 @@ class LoginView(generics.GenericAPIView):
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key})
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid Credentials'}, status=400)
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated])  # ✅ Explicit usage
 def follow_user(request, user_id):
     try:
-        user_to_follow = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user_to_follow = CustomUser.objects.get(id=user_id)  # ✅ Explicitly use CustomUser
+    except CustomUser.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
+    
     if user_to_follow == request.user:
         return Response({'error': 'You cannot follow yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -44,11 +42,11 @@ def follow_user(request, user_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated])  # ✅ Explicit usage
 def unfollow_user(request, user_id):
     try:
-        user_to_unfollow = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user_to_unfollow = CustomUser.objects.get(id=user_id)  # ✅ Explicitly use CustomUser
+    except CustomUser.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
     request.user.following.remove(user_to_unfollow)
